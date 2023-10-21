@@ -21,8 +21,10 @@ router.post('/login', (req: Request, res: Response) => {
       }
 
       if (results.length === 1) {
+        const user_name = results[0].user_name;
+
         // 로그인 성공
-        res.status(200).json({ message: '로그인 성공' });
+        res.status(200).json({ message: '로그인 성공', user_name : user_name});
       } else {
         // 로그인 실패
         res.status(401).json({ message: '로그인 실패' });
