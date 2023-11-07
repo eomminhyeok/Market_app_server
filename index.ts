@@ -2,6 +2,7 @@ import express from 'express';
 import mysql from 'mysql';
 import bodyParser from 'body-parser';
 import usersRouter from './router/userinfo';
+import pointsRouter from './router/points';
 
 const app = express();
 const port = 8000;
@@ -42,8 +43,9 @@ app.get('/user', (req, res) => {
   });
 });
 
-
 app.use('/userinfo', usersRouter);
+
+app.use('/points', pointsRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
