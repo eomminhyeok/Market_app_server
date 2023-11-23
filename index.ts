@@ -1,8 +1,10 @@
 import express from 'express';
 import mysql from 'mysql';
 import bodyParser from 'body-parser';
+import * as schedule from 'node-schedule';
 import usersRouter from './router/userinfo';
 import pointsRouter from './router/points';
+import productRouter from './router/product';
 
 const app = express();
 const port = 8000;
@@ -30,22 +32,24 @@ app.get('/', (req, res) => {
   res.send('서버 접속 성공');
 });
 
-app.get('/user', (req, res) => {
-  const query = 'SELECT * FROM user';
-
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error('유저 정보를 가져오기 실패:', err);
-      res.status(500).json({ error: '유저 정보 가져오기 실패'});
-      return;
-    }
-    res.json(results);
-  });
+const job = schedule.scheduleJob('*/1 * * * *', async () => {
+  try {
+    // 현재 시간보다 expiryTime이 이전인 게시물 검색
+    const sql = 'DELETE FROM product WHERE expiryTime <= NOW()';
+    db.query(sql, (error, results) => {
+      if (error) throw error;
+      console.log('Expired posts deleted:', results.affectedRows);
+    });
+  } catch (error) {
+    console.error('Error deleting expired posts:', error);
+  }
 });
 
 app.use('/userinfo', usersRouter);
 
 app.use('/points', pointsRouter);
+
+app.use('/product', productRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
