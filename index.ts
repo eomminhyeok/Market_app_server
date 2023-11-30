@@ -5,6 +5,8 @@ import * as schedule from 'node-schedule';
 import usersRouter from './router/userinfo';
 import pointsRouter from './router/points';
 import productRouter from './router/product';
+import postsRouter from './router/posts';
+import path from 'path';
 
 const app = express();
 const port = 8000;
@@ -12,6 +14,7 @@ const port = 8000;
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static('uploads'));
 
 const db = mysql.createConnection({
   host: '127.0.0.1' ,
@@ -50,6 +53,14 @@ app.use('/userinfo', usersRouter);
 app.use('/points', pointsRouter);
 
 app.use('/product', productRouter);
+
+app.use('/posts', postsRouter);
+
+app.get('/getImage', (req, res) => {
+  const imagePath = req.query.imagePath as string;
+  console.log(imagePath);
+  res.sendFile(path.join(__dirname, imagePath));
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

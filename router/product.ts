@@ -32,7 +32,7 @@ router.post('/create', upload.array('images', 5), (req: Request, res: Response) 
     console.log("images:", images);
 
     const imageUrls = (req.files as Express.Multer.File[]).map((file) => {
-        return `http://localhost:8000/${file.path}`;
+        return file.path;
     });
 
     db.query(
@@ -42,9 +42,6 @@ router.post('/create', upload.array('images', 5), (req: Request, res: Response) 
             if (err) {
                 console.error('등록 실패 : ' + err.message);
                 res.status(500).json();
-            } else if (!imageUrls || imageUrls.length === 0) {
-                console.log('게시글을 등록하려면 상품 이미지를 포함해야합니다.');
-                res.status(400).json();
             } else {
                 imageUrls.forEach((imageUrl) => {
                     db.query(
