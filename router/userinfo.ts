@@ -5,15 +5,15 @@ const router: Router = express.Router();
 
 // 사용자 로그인 처리 라우터
 router.post('/login', (req: Request, res: Response) => {
-  const { user_id, password } = req.body;
+  const { userId, password } = req.body;
     console.log("connect request");
-    console.log("user_id : " + user_id);
+    console.log("userId : " + userId);
     console.log("password : " + password)
   // 데이터베이스에서 사용자 정보를 조회하여 인증 수행
 
   db.query(
-    'SELECT * FROM user WHERE user_id = ? AND password = ?',
-    [user_id, password],
+    'SELECT * FROM user WHERE userId = ? AND password = ?',
+    [userId, password],
     (err, results) => {
       if (err) {
         console.error('데이터베이스 오류:', err);
@@ -50,7 +50,7 @@ router.post('/sign', (req: Request, res: Response) => {
   // 데이터베이스에서 사용자 정보를 조회하여 인증 수행
   db.query(
 
-    'SELECT * FROM user WHERE user_id = ?',
+    'SELECT * FROM user WHERE userId = ?',
     [userId],
     (err, results) => {
       if (err) {
@@ -67,7 +67,7 @@ router.post('/sign', (req: Request, res: Response) => {
       else {
         // 회원가입 성공
         db.query(
-          'INSERT INTO user (user_name, user_id, password, email, phone_number, address, points) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO user (user_name, userId, password, email, phone_number, address, points) VALUES (?, ?, ?, ?, ?, ?, ?)',
           [userName, userId, password, email, phoneNumber, address, 0],
           (err) => {
             if (err) {
@@ -80,6 +80,88 @@ router.post('/sign', (req: Request, res: Response) => {
             res.status(200).json({ message: '회원가입 성공!' });
           }
         );
+      }
+    }
+  );
+});
+
+// 사용자 포인트 다시 불러오기
+router.post('/updateName', (req: Request, res: Response) => {
+  const { userId } = req.body;
+    console.log("connect request");
+    console.log("userId : " + userId);
+  // 데이터베이스에서 사용자 정보를 조회하여 인증 수행
+
+  db.query(
+    'SELECT * FROM user WHERE userId = ?',
+    [userId],
+    (err, results) => {
+      if (err) {
+        console.error('데이터베이스 오류:', err);
+        res.status(500).json({ message: '서버 오류' });
+        return;
+      }
+
+      if (results.length === 1) {
+        const points = results[0].points;
+
+        // 로그인 성공
+        res.status(200).json({ message: '로그인 성공', points: points});
+      } else {
+        // 로그인 실패
+        res.status(401).json({ message: '로그인 실패' });
+      }
+    }
+  );
+});
+
+router.post('/searchName', (req: Request, res: Response) => {
+  const { seller, buyer } = req.body;
+  console.log("connect request");
+  console.log("userId : " + seller);
+
+  // seller 정보 조회
+  db.query(
+    'SELECT * FROM user WHERE userId = ?',
+    [seller],
+    (err, results) => {
+      if (err) {
+        console.error('판매자 이름 조회 실패:', err);
+        res.status(500).json({ message: '서버 오류' });
+        return;
+      }
+
+      if (results.length === 1) {
+        const sellerName = results[0].user_name;
+
+        // buyer가 null이 아닌 경우
+        if (buyer !== null) {
+          // buyer 정보 조회
+          db.query(
+            'SELECT user_name FROM user WHERE userId = ?',
+            [buyer],
+            (err, results) => {
+              if (err) {
+                console.error('구매자 이름 조회 실패:', err);
+                res.status(500).json({ message: '서버 오류' });
+                return;
+              }
+
+              if (results.length === 1) {
+                const buyerName = results[0].user_name;
+
+                res.status(200).json({ sellerName: sellerName, buyerName: buyerName });
+              } else {
+                res.status(401).json({ message: '구매자 이름 불러오기 실패' });
+              }
+            }
+          );
+        } else {
+          // buyer가 null인 경우
+          res.status(200).json({ sellerName: sellerName, buyerName: null });
+        }
+      } else {
+        res.status(401).json({ message: '판매자 이름 불러오기 실패' });
       }
     }
   );

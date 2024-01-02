@@ -6,7 +6,7 @@ import path from 'path';
 
 const router: Router = express.Router();
 
-const storage = multer.diskStorage({
+const storage = multer.diskStorage({  // 이미지 파일 저장 설정
     destination: function (req: Request, file: Express.Multer.File, cb: any) {
         cb(null, 'uploads/'); // 업로드된 파일을 저장할 디렉토리 설정
     },
@@ -18,6 +18,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+// 게시글 등록 라우터
 router.post('/create', upload.array('images', 5), (req: Request, res: Response) => {
     const { title, description, price, bid, seller, createdTime, expiryTime } = req.body;
     const images = req.files;
